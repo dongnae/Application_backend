@@ -3,6 +3,7 @@ const MongoClient = require('mongodb').MongoClient;
 const csv_parse = require("csv-parse/lib/sync");
 
 const path = require('path');
+const https = require("https");
 const fs = require("fs");
 
 const apiRouter = require('./routes/api');
@@ -32,7 +33,11 @@ app.use((req, res) => {
 		process.exit(0);
 	});
 
-	app.listen(80, () => {
-		console.log('Server started on port 80');
+	https.createServer({
+		cert: fs.readFileSync('./ssl/cert.pem'),
+		ca: fs.readFileSync('./ssl/fullchain.pem'),
+		key: fs.readFileSync('./ssl/privkey.pem')
+	}, app).listen(443, () => {
+		console.log('HTTPS Server started on port 443');
 	});
 })();

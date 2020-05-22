@@ -84,7 +84,7 @@ router.post('/application', async function (req, res) {
 			}
 		});
 
-		if (studentQuery === 1 && groupQuery === 1) {
+		if (studentQuery.insertedCount === 1 && groupQuery.modifiedCount === 1) {
 			res.status(200);
 			res.end(JSON.stringify({
 				status: 0

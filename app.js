@@ -17,6 +17,8 @@ global.__student = csv_parse(fs.readFileSync("./grade.csv"), {
 	trim: true
 });
 
+//app.use(require("cors")());
+
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -27,7 +29,10 @@ app.use((req, res) => {
 });
 
 (async () => {
-	await MongoClient.connect(option.url, {useNewUrlParser: true, useUnifiedTopology: true}).then(d => global.__database = d.db('groups')).catch(e => {
+	await MongoClient.connect(option.url, {
+		useNewUrlParser: true,
+		useUnifiedTopology: true
+	}).then(d => global.__database = d.db('groups')).catch(e => {
 		console.log("DB Connection Fail");
 		console.log(e);
 		process.exit(0);

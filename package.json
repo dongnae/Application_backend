@@ -1,0 +1,10 @@
+{
+  "name": "group.dnhs.me-backend",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "express": "~4.16.1",
+    "mongodb": "^3.5.7",
+    "csv-parse": "^4.10.1"
+  }
+}

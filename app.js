@@ -15,7 +15,7 @@ global.__database = null;
 global.__student = csv_parse(fs.readFileSync("./grade.csv"), {
 	skip_empty_lines: true,
 	trim: true
-});
+}).slice(1);
 
 //app.use(require("cors")());
 

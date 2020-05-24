@@ -1,8 +1,52 @@
 const express = require('express');
+const option = require("../option");
 const router = express.Router();
 
+router.post('/admin', async function (req, res) {
+	try {
+		res.header("Content-Type", "application/json; charset=utf-8");
+
+		let id = req.body.id, pw = req.body.pw;
+		if (id !== option.admin.id || pw !== option.admin.pw) {
+			res.status(403);
+			res.end(JSON.stringify({
+				status: 1
+			}));
+			return;
+		}
+
+		let students = {}, groups = {};
+		(await __database.collection('student').find({}).toArray()).forEach(v => {
+			if (v._id !== undefined) delete v._id;
+			students[v.num] = v;
+
+			if (groups[v.groupId] === undefined) groups[v.groupId] = [];
+			groups[v.groupId].push(v);
+		});
+
+		res.status(200);
+		res.end(JSON.stringify({
+			status: 0,
+			result: {
+				groups: (await __database.collection('group').find({}).toArray()).map(v => {
+					if (v._id !== undefined) delete v._id;
+					if (groups[v.id] !== undefined) v.students = groups[v.id];
+					return v;
+				}),
+				//registerStudent: students,
+				unregisterStudent: __student.filter(v => students[v[0]] === undefined)
+			}
+		}));
+	} catch (e) {
+		res.status(500);
+		res.end(JSON.stringify({
+			status: 2
+		}));
+	}
+});
+
 router.post('/groups', async function (req, res) {
-	try{
+	try {
 		res.header("Content-Type", "application/json; charset=utf-8");
 		res.status(200);
 		res.end(JSON.stringify({
@@ -12,7 +56,7 @@ router.post('/groups', async function (req, res) {
 				return v;
 			})
 		}));
-	}catch (e) {
+	} catch (e) {
 		res.status(500);
 		res.end(JSON.stringify({
 			status: 1
@@ -21,7 +65,7 @@ router.post('/groups', async function (req, res) {
 });
 
 router.post('/application', async function (req, res) {
-	try{
+	try {
 		res.header("Content-Type", "application/json; charset=utf-8");
 
 		let num = req.body.num, name = req.body.name, group = req.body.group;
@@ -77,7 +121,12 @@ router.post('/application', async function (req, res) {
 			return;
 		}
 
-		let studentQuery = await __database.collection('student').insertOne({num: num, name: name, groupId: group, registerTime: parseInt(Date.now() / 1000)});
+		let studentQuery = await __database.collection('student').insertOne({
+			num: num,
+			name: name,
+			groupId: group,
+			registerTime: Date.now()
+		});
 		let groupQuery = await __database.collection('group').updateOne({id: group}, {
 			$set: {
 				available: selectedGroup.available - 1
@@ -89,13 +138,13 @@ router.post('/application', async function (req, res) {
 			res.end(JSON.stringify({
 				status: 0
 			}));
-		}else{
+		} else {
 			res.status(500);
 			res.end(JSON.stringify({
 				status: 6
 			}));
 		}
-	}catch (e) {
+	} catch (e) {
 		res.status(500);
 		res.end(JSON.stringify({
 			status: 7

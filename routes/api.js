@@ -38,6 +38,7 @@ router.post('/admin', async function (req, res) {
 			}
 		}));
 	} catch (e) {
+		console.log(e)
 		res.status(500);
 		res.end(JSON.stringify({
 			status: 2
@@ -57,6 +58,7 @@ router.post('/groups', async function (req, res) {
 			})
 		}));
 	} catch (e) {
+		console.log(e)
 		res.status(500);
 		res.end(JSON.stringify({
 			status: 1
@@ -145,12 +147,20 @@ router.post('/application', async function (req, res) {
 			}));
 		}
 	} catch (e) {
+		console.log(e)
 		res.status(500);
 		res.end(JSON.stringify({
 			status: 7
 		}));
 	}
 });
+
+router.post((req, res) => {
+	res.status(403);
+	res.end(JSON.stringify({
+		result: 999
+	}));
+})
 
 router.use((req, res) => {
 	res.status(405);

@@ -3,4 +3,5 @@ node_modules
 .idea
 ssl/*.pem
 grade.csv
+*/*.csv
 option.js

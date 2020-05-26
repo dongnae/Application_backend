@@ -11,6 +11,10 @@ const option = require("./option");
 
 const app = express();
 
+process.env.TZ = "Asia/Seoul";
+global.__registerTime = (new Date(
+	"2020-05-26 11:0:0"
+)).getTime();
 global.__database = null;
 global.__student = csv_parse(fs.readFileSync("./grade.csv"), {
 	skip_empty_lines: true,

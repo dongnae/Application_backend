@@ -9,7 +9,7 @@ const readline = require("readline").createInterface({
 	output: process.stdout
 });
 
-const remove = false;
+const remove = true;
 new Promise(async (r) => await MongoClient.connect(option.url, {
 	useNewUrlParser: true,
 	useUnifiedTopology: true

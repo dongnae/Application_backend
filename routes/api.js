@@ -112,70 +112,80 @@ router.post('/application', async function (req, res) {
 			return;
 		}
 
-		let student;
-		if ((student = await __database.collection('student').findOne({num: num, name: name})) !== null) {
-			res.status(200);
-			res.end(JSON.stringify({
-				status: 4,
-				message: student.groupId === 999 ? "이미 동아리에 신청하였습니다." : "이미 동아리에 신청하였습니다.",
-				groups: (await __database.collection('group').find({}).toArray()).map(v => {
-					if (v._id !== undefined) delete v._id;
-					return v;
-				})
-			}));
-			return;
-		}
+		__pushApplicationTask(async () => {
+			try {
+				let student;
+				if ((student = await __database.collection('student').findOne({num: num, name: name})) !== null) {
+					res.status(200);
+					res.end(JSON.stringify({
+						status: 4,
+						message: student.groupId === 999 ? "이미 동아리에 신청하였습니다." : "이미 동아리에 신청하였습니다.",
+						groups: (await __database.collection('group').find({}).toArray()).map(v => {
+							if (v._id !== undefined) delete v._id;
+							return v;
+						})
+					}));
+					return;
+				}
 
-		let selectedGroup = await __database.collection('group').findOne({id: group});
-		if (selectedGroup === null) {
-			res.status(403);
-			res.end(JSON.stringify({
-				status: 5
-			}));
-			return;
-		}
+				let selectedGroup = await __database.collection('group').findOne({id: group});
+				if (selectedGroup === null) {
+					res.status(403);
+					res.end(JSON.stringify({
+						status: 5
+					}));
+					return;
+				}
 
-		if (!selectedGroup.available) {
-			res.status(200);
-			res.end(JSON.stringify({
-				status: 6,
-				message: "선택한 동아리의 모집이 마감되었습니다.\n다른 동아리를 선택해주세요.",
-				groups: (await __database.collection('group').find({}).toArray()).map(v => {
-					if (v._id !== undefined) delete v._id;
-					return v;
-				})
-			}));
-			return;
-		}
+				if (!selectedGroup.available) {
+					res.status(200);
+					res.end(JSON.stringify({
+						status: 6,
+						message: "선택한 동아리의 모집이 마감되었습니다.\n다른 동아리를 선택해주세요.",
+						groups: (await __database.collection('group').find({}).toArray()).map(v => {
+							if (v._id !== undefined) delete v._id;
+							return v;
+						})
+					}));
+					return;
+				}
 
-		let studentQuery = await __database.collection('student').insertOne({
-			num: num,
-			name: name,
-			groupId: group,
-			registerTime: Date.now()
-		});
-		let groupQuery = await __database.collection('group').updateOne({id: group}, {
-			$set: {
-				available: selectedGroup.available - 1
+				let studentQuery = await __database.collection('student').insertOne({
+					num: num,
+					name: name,
+					groupId: group,
+					registerTime: Date.now()
+				});
+				let groupQuery = await __database.collection('group').updateOne({id: group}, {
+					$set: {
+						available: selectedGroup.available - 1
+					}
+				});
+
+				if (studentQuery.insertedCount === 1 && groupQuery.modifiedCount === 1) {
+					res.status(200);
+					res.end(JSON.stringify({
+						status: 0
+					}));
+				} else {
+					res.status(500);
+					res.end(JSON.stringify({
+						status: 7
+					}));
+				}
+			} catch (e) {
+				console.log(e);
+				res.status(500);
+				res.end(JSON.stringify({
+					status: 7
+				}));
 			}
 		});
-
-		if (studentQuery.insertedCount === 1 && groupQuery.modifiedCount === 1) {
-			res.status(200);
-			res.end(JSON.stringify({
-				status: 0
-			}));
-		} else {
-			res.status(500);
-			res.end(JSON.stringify({
-				status: 7
-			}));
-		}
 	} catch (e) {
 		console.log(e)
 		res.status(500);
 		res.end(JSON.stringify({
-			status: 7
+			status: 8
 		}));
 	}
 });

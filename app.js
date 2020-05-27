@@ -13,13 +13,35 @@ const app = express();
 
 process.env.TZ = "Asia/Seoul";
 global.__registerTime = (new Date(
-	"2020-05-26 11:0:0"
+	"2020-05-27 15:50:0"
 )).getTime();
 global.__database = null;
 global.__student = csv_parse(fs.readFileSync("./grade.csv"), {
 	skip_empty_lines: true,
 	trim: true
 }).slice(1);
+
+let queue = [];
+global.__pushApplicationTask = cb => {
+	queue.push(cb);
+};
+
+(async () => {
+	while (true) {
+		try {
+			if (queue.length === 0) {
+				await new Promise(r => setTimeout(() => r(), 100));
+				continue;
+			}
+			let cb = queue.shift();
+			await cb();
+			await new Promise(r => setTimeout(() => r(), 10));
+		} catch (e) {
+			console.log("app.js queue process");
+			console.log(e);
+		}
+	}
+})();
 
 //app.use(require("cors")());
 

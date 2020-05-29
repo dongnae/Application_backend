@@ -112,7 +112,7 @@ router.post('/application', async function (req, res) {
 			return;
 		}
 
-		__pushApplicationTask(async () => {
+		__pushApplicationTask(group, async () => {
 			try {
 				let student;
 				if ((student = await __database.collection('student').findOne({num: num, name: name})) !== null) {
@@ -125,7 +125,7 @@ router.post('/application', async function (req, res) {
 							return v;
 						})
 					}));
-					return;
+					return 999;
 				}
 
 				let selectedGroup = await __database.collection('group').findOne({id: group});
@@ -134,7 +134,7 @@ router.post('/application', async function (req, res) {
 					res.end(JSON.stringify({
 						status: 5
 					}));
-					return;
+					return 999;
 				}
 
 				if (!selectedGroup.available) {
@@ -147,7 +147,7 @@ router.post('/application', async function (req, res) {
 							return v;
 						})
 					}));
-					return;
+					return 0;
 				}
 
 				let studentQuery = await __database.collection('student').insertOne({
@@ -167,26 +167,31 @@ router.post('/application', async function (req, res) {
 					res.end(JSON.stringify({
 						status: 0
 					}));
+                    
+                    return selectedGroup.available - 1;
 				} else {
 					res.status(500);
 					res.end(JSON.stringify({
 						status: 7
 					}));
+					return 999;
 				}
 			} catch (e) {
 				console.log(e);
 				res.status(500);
 				res.end(JSON.stringify({
-					status: 7
+					status: 8
 				}));
+                return 999;
 			}
 		});
 	} catch (e) {
 		console.log(e)
 		res.status(500);
 		res.end(JSON.stringify({
-			status: 8
+			status: 9
 		}));
+		return 999;
 	}
 });
 

@@ -13,7 +13,7 @@ const app = express();
 
 process.env.TZ = "Asia/Seoul";
 global.__registerTime = (new Date(
-	"2020-05-27 15:50:0"
+	"2020-05-28 8:20:0"
 )).getTime();
 global.__database = null;
 global.__student = csv_parse(fs.readFileSync("./grade.csv"), {
@@ -21,27 +21,38 @@ global.__student = csv_parse(fs.readFileSync("./grade.csv"), {
 	trim: true
 }).slice(1);
 
-let queue = [];
-global.__pushApplicationTask = cb => {
-	queue.push(cb);
+let queue = [], running = [];
+global.__pushApplicationTask = (groupId, cb) => {
+    if (queue[groupId] === undefined) {
+        queue[groupId] = [cb];
+    }
+	else queue[groupId].push(cb);
+    
+    if (running[groupId] !== true) {
+        running[groupId] = true;
+        executeGroupTask(groupId);
+    }
 };
 
-(async () => {
-	while (true) {
-		try {
-			if (queue.length === 0) {
-				await new Promise(r => setTimeout(() => r(), 100));
-				continue;
-			}
-			let cb = queue.shift();
-			await cb();
-			await new Promise(r => setTimeout(() => r(), 10));
-		} catch (e) {
-			console.log("app.js queue process");
-			console.log(e);
-		}
-	}
-})();
+const executeGroupTask = async(groupId) => {
+    if (queue[groupId] !== undefined) {
+        if (queue[groupId].length > 0) {
+            try {
+                let ret = await queue[groupId].shift()();
+                console.log(groupId, ret, 'app');
+                if (ret <= 0) {
+                    let tmp = queue[groupId].slice(0);
+                    queue[groupId] = [];
+                    running[groupId] = false;
+                    while (tmp.length > 0) tmp.shift()();
+                }else setTimeout(() => executeGroupTask(groupId), 3);
+            } catch (e) {
+                console.log("app.js queue process");
+                console.log(e);
+            }
+        }
+    }
+};
 
 //app.use(require("cors")());
 

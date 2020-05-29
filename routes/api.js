@@ -51,9 +51,18 @@ router.post('/groups', async function (req, res) {
 		res.header("Content-Type", "application/json; charset=utf-8");
 		res.status(200);
 
-		if (__registerTime > Date.now()) {
+		if (__finishTime < Date.now()) {
 			res.end(JSON.stringify({
 				status: 1,
+				message: "신청 기간이 아닙니다.",
+				finish: true
+			}));
+			return;
+		}
+
+		if (__registerTime > Date.now()) {
+			res.end(JSON.stringify({
+				status: 2,
 				message: "신청 기간이 아닙니다.",
 				time: __registerTime - Date.now()
 			}));
@@ -71,7 +80,7 @@ router.post('/groups', async function (req, res) {
 		console.log(e)
 		res.status(500);
 		res.end(JSON.stringify({
-			status: 2
+			status: 3
 		}));
 	}
 });
@@ -89,10 +98,19 @@ router.post('/application', async function (req, res) {
 			return;
 		}
 
+		if (__finishTime < Date.now()) {
+			res.end(JSON.stringify({
+				status: 2,
+				message: "신청 기간이 아닙니다.",
+				finish: true
+			}));
+			return;
+		}
+
 		if (__registerTime > Date.now()) {
 			res.status(200);
 			res.end(JSON.stringify({
-				status: 2,
+				status: 3,
 				message: "신청 기간이 아닙니다.",
 				time: __registerTime - Date.now()
 			}));
@@ -102,7 +120,7 @@ router.post('/application', async function (req, res) {
 		if (!__student.filter(v => v[0] === num && v[1] === name).length) {
 			res.status(200);
 			res.end(JSON.stringify({
-				status: 3,
+				status: 4,
 				message: "이름 또는 학번이 잘못되었습니다.",
 				groups: (await __database.collection('group').find({}).toArray()).map(v => {
 					if (v._id !== undefined) delete v._id;
@@ -118,7 +136,7 @@ router.post('/application', async function (req, res) {
 				if ((student = await __database.collection('student').findOne({num: num, name: name})) !== null) {
 					res.status(200);
 					res.end(JSON.stringify({
-						status: 4,
+						status: 5,
 						message: student.groupId === 999 ? "이미 동아리에 신청하였습니다." : "이미 동아리에 신청하였습니다.",
 						groups: (await __database.collection('group').find({}).toArray()).map(v => {
 							if (v._id !== undefined) delete v._id;
@@ -132,7 +150,7 @@ router.post('/application', async function (req, res) {
 				if (selectedGroup === null) {
 					res.status(403);
 					res.end(JSON.stringify({
-						status: 5
+						status: 6
 					}));
 					return 999;
 				}
@@ -140,7 +158,7 @@ router.post('/application', async function (req, res) {
 				if (!selectedGroup.available) {
 					res.status(200);
 					res.end(JSON.stringify({
-						status: 6,
+						status: 7,
 						message: "선택한 동아리의 모집이 마감되었습니다.\n다른 동아리를 선택해주세요.",
 						groups: (await __database.collection('group').find({}).toArray()).map(v => {
 							if (v._id !== undefined) delete v._id;
@@ -167,12 +185,12 @@ router.post('/application', async function (req, res) {
 					res.end(JSON.stringify({
 						status: 0
 					}));
-                    
+
                     return selectedGroup.available - 1;
 				} else {
 					res.status(500);
 					res.end(JSON.stringify({
-						status: 7
+						status: 8
 					}));
 					return 999;
 				}
@@ -180,7 +198,7 @@ router.post('/application', async function (req, res) {
 				console.log(e);
 				res.status(500);
 				res.end(JSON.stringify({
-					status: 8
+					status: 9
 				}));
                 return 999;
 			}
@@ -189,7 +207,7 @@ router.post('/application', async function (req, res) {
 		console.log(e)
 		res.status(500);
 		res.end(JSON.stringify({
-			status: 9
+			status: 10
 		}));
 		return 999;
 	}

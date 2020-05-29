@@ -15,6 +15,9 @@ process.env.TZ = "Asia/Seoul";
 global.__registerTime = (new Date(
 	"2020-05-28 8:20:0"
 )).getTime();
+global.__finishTime = (new Date(
+	"2020-05-28 16:30:0"
+)).getTime();
 global.__database = null;
 global.__student = csv_parse(fs.readFileSync("./grade.csv"), {
 	skip_empty_lines: true,
@@ -27,7 +30,7 @@ global.__pushApplicationTask = (groupId, cb) => {
         queue[groupId] = [cb];
     }
 	else queue[groupId].push(cb);
-    
+
     if (running[groupId] !== true) {
         running[groupId] = true;
         executeGroupTask(groupId);

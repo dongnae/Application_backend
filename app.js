@@ -13,10 +13,10 @@ const app = express();
 
 process.env.TZ = "Asia/Seoul";
 global.__registerTime = (new Date(
-	"2020-05-28 8:20:0"
+	"2020-07-22 21:00:0"
 )).getTime();
 global.__finishTime = (new Date(
-	"2020-05-28 16:30:0"
+	"2020-07-25 0:0:0"
 )).getTime();
 global.__database = null;
 global.__student = csv_parse(fs.readFileSync("./grade.csv"), {
@@ -53,7 +53,7 @@ const executeGroupTask = async(groupId) => {
                 console.log("app.js queue process");
                 console.log(e);
             }
-        }
+        }else running[groupId] = false;
     }
 };
 

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
-    "express": "~4.16.1",
+    "express": "~4.17.3",
     "mongodb": "^3.5.7",
     "csv-parse": "^4.10.1",
     "cors": "^2.8.5",
